@@ -14,13 +14,13 @@ def main():
     )
     parser.add_argument(
         "-t", "--templates_dir",
-        default=os.path.join(os.getcwd(), "templates_secure"),
-        help="テンプレートファイルが格納されているディレクトリのパス (デフォルト: ./templates_secure)"
+        default=os.path.join(os.getcwd(), "templates"),
+        help="テンプレートファイルが格納されているディレクトリのパス (デフォルト: ./templates)"
     )
     parser.add_argument(
         "-o", "--output_file",
-        default=os.path.join(os.getcwd(), "output.html"),
-        help="コンパイルされたHTMLの出力先ファイルパス (デフォルト: ./output.html)"
+        default=os.path.join(os.getcwd(), "index.html"),
+        help="コンパイルされたHTMLの出力先ファイルパス (デフォルト: ./index.html)"
     )
 
     args = parser.parse_args()
