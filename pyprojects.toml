@@ -1,0 +1,32 @@
+# pyproject.toml
+[project]
+name = "xiv-compiler" # PyPIでのパッケージ名
+version = "0.0.3" # パッケージのバージョン (リリース時に更新することを推奨)
+description = "A simple compiler for the XIV template language into HTML." # パッケージの短い説明
+readme = "README.md" # PyPIページに表示されるREADMEファイル
+requires-python = ">=3.8" # 動作に必要なPythonの最小バージョン
+license = { text = "MIT" } # ライセンス情報 (ここではMITライセンス)
+keywords = ["xiv", "html", "template", "compiler"] # PyPIでの検索キーワード
+authors = [ # 作者情報
+  { name = "sktryo", email = "ryoskt123@gmail.com" }, # あなたの名前に置き換えてください
+]
+classifiers = [ # パッケージの分類情報 (PyPIの検索フィルターに影響)
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha", # 開発状況 (Alpha, Beta, Production/Stableなど)
+    "Topic :: Software Development :: Compilers",
+    "Topic :: Text Processing :: Markup :: HTML",
+]
+dependencies = [] # 実行に必要なPythonパッケージ (例: "requests>=2.0")
+
+# コマンドラインスクリプト (xc コマンドを有効にする設定)
+[project.scripts]
+xc = "xiv_compiler.main:main" # 'xc' コマンドが xiv_compiler/main.py の main() 関数を呼び出す
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"] # ビルドに必要なツール
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["xiv_compiler"] # パッケージとして含めるディレクトリ (xiv_compiler/main.py が含まれるように)
