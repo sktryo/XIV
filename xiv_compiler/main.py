@@ -10,7 +10,7 @@ def main():
     )
     parser.add_argument(
         "input_file",
-        help="コンパイルするメインのXIVファイルのパス。\n例: python main.py main_secure.xiv"
+        help="コンパイルするメインのXIVファイルのパス。\n例: python main.py main.xiv"
     )
     parser.add_argument(
         "-t", "--templates_dir",
