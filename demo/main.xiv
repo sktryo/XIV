@@ -1,0 +1,15 @@
+<xiv type="main">
+    <head>
+        <title>XIV Demo!</title>
+        <link rel="stylesheet" href="style.css" />
+        <meta charset="UTF-8" />
+    </head>
+    <body>
+        <x-temp x-name="panel" t-header="1" t-string="
+        テンプレート機能のみを搭載しためちゃくちゃシンプルなテンプレートエンジン、その名も...
+        " />
+        <x-temp x-name="panel" t-header="2" t-string="
+        XIV!!
+        " />
+    </body>
+</xiv>
