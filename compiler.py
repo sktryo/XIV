@@ -2,6 +2,7 @@
 import re
 import os
 import html # HTMLエスケープのために追加
+from bs4 import BeautifulSoup
 
 class XivCompiler:
     """
@@ -183,4 +184,4 @@ class XivCompiler:
         parts.append(current_content[last_end:])
 
         # 処理されたコンテンツ文字列を返します。
-        return "".join(parts)
+        return BeautifulSoup("".join(parts), 'html.parser').prettify()
