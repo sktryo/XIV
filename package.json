@@ -7,7 +7,7 @@
     "xiv": "./cli.js"
   },
   "scripts": {
-    "test": "venv/bin/python3 -m pytest"
+    "test": "python3 -m pytest"
   },
   "keywords": [
     "template-engine",
