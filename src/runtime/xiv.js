@@ -1,44 +1,4 @@
-<!DOCTYPE html>
-<html>
- <body>
-  <title>
-   XIV Interactive Demo!
-  </title>
-  <link href="style.css" rel="stylesheet"/>
-  <meta charset="utf-8"/>
-  <h1>
-   XIV Interactive Demo
-  </h1>
-  <div class="demo-box" x-data='{ "count": 0, "message": "Hello XIV!" }'>
-   <h2>
-    Counter
-   </h2>
-   <p>
-    Current count is:
-    <b x-text="count">
-    </b>
-   </p>
-   <button x-on:click="count++">
-    Increment
-   </button>
-   <hr/>
-   <h2>
-    Two-Way Data Binding (x-model)
-   </h2>
-   <p>
-    Type in the box below.
-   </p>
-   <input type="text" x-model="message"/>
-   <p>
-    The message is:
-    <b>
-     <span x-text="message">
-     </span>
-    </b>
-   </p>
-  </div>
-  <script>
-   const XIV = {
+const XIV = {
     init() {
         document.querySelectorAll('[x-data]').forEach(el => {
             this.initComponent(el);
@@ -133,6 +93,3 @@
 document.addEventListener('DOMContentLoaded', () => {
     XIV.init();
 });
-  </script>
- </body>
-</html>

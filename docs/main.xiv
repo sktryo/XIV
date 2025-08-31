@@ -1,15 +1,24 @@
 <xiv type="main">
     <head>
-        <title>XIV Demo!</title>
+        <title>XIV Interactive Demo!</title>
         <link rel="stylesheet" href="style.css" />
         <meta charset="UTF-8" />
     </head>
     <body>
-        <x-temp x-name="panel" t-header="1" t-string="
-        テンプレート機能のみを搭載しためちゃくちゃシンプルなテンプレートエンジン、その名も...
-        " />
-        <x-temp x-name="panel" t-header="2" t-string="
-        XIV!!
-        " />
+        <h1>XIV Interactive Demo</h1>
+
+        <div class="demo-box" x-data='{ "count": 0, "message": "Hello XIV!" }'>
+            <h2>Counter</h2>
+            <p>Current count is: <b x-text="count"></b></p>
+            <button x-on:click="count++">Increment</button>
+            
+            <hr>
+
+            <h2>Two-Way Data Binding (x-model)</h2>
+            <p>Type in the box below.</p>
+            <input type="text" x-model="message">
+            <p>The message is: <b><span x-text="message"></span></b></p>
+        </div>
+
     </body>
 </xiv>

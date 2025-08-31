@@ -1,0 +1,29 @@
+{
+  "name": "xiv-lang",
+  "version": "1.0.0",
+  "description": "XIV is a simple template engine for creating component-based HTML.",
+  "main": "cli.js",
+  "bin": {
+    "xiv": "./cli.js"
+  },
+  "scripts": {
+    "test": "venv/bin/python3 -m pytest"
+  },
+  "keywords": [
+    "template-engine",
+    "html",
+    "components"
+  ],
+  "author": "",
+  "license": "MIT",
+  "files": [
+    "src/",
+    "runtime/",
+    "cli.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "commander": "^14.0.0"
+  }
+}

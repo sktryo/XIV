@@ -1,0 +1,24 @@
+# Git
+.git/
+.gitignore
+
+# Python caches
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+
+# Python virtual environment
+venv/
+
+# Node.js dependencies
+node_modules/
+
+# Docs folder (not needed for the compiler to run)
+docs/
+
+# Test files
+tests/
+
+# Other
+*.pyc
+package-lock.json

@@ -2,8 +2,10 @@
 import re
 import os
 import html
+import json
+import copy
 import logging
-from typing import Set, Dict, Optional, cast
+from typing import Set, Dict, Optional, cast, Any, List
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
@@ -25,21 +27,40 @@ class XivCompiler:
         """
         self._visited_templates_stack: Set[str] = set()
 
+    def _get_value_from_path(self, path: str, data: Dict[str, Any]) -> Any:
+        """ ドット記法のパスを使って、ネストした辞書から値を取得します。 """
+        keys = path.split('.')
+        value = data
+        for key in keys:
+            if isinstance(value, dict):
+                value = value.get(key)
+            else:
+                return None
+            if value is None:
+                return None
+        return value
+
+    def _evaluate_condition(self, condition_str: str, args: Dict[str, Any]) -> bool:
+        """ 条件式を評価して真偽値を返します。 """
+        is_negated = condition_str.startswith('not ')
+        var_name = condition_str[4:].strip() if is_negated else condition_str.strip()
+
+        value = self._get_value_from_path(var_name, args)
+
+        if value is None:
+            is_true = False
+        elif isinstance(value, bool):
+            is_true = value
+        elif str(value).lower() in ["false", "0", ""]:
+            is_true = False
+        else:
+            is_true = True
+            
+        return not is_true if is_negated else is_true
+
     def compile(self, main_file_path: str, templates_dir: str) -> str:
         """
         指定されたメインのXIVファイルをコンパイルし、テンプレートを解決してHTMLを生成します。
-
-        Args:
-            main_file_path (str): メインのXIVファイルへのパス。
-            templates_dir (str): テンプレートファイルが保存されているディレクトリへのパス。
-
-        Returns:
-            str: コンパイルされたHTML文字列。
-
-        Raises:
-            FileNotFoundError: 指定されたXIVファイルまたはテンプレートディレクトリが見つからない場合。
-            ValueError: 無効なパスが指定された場合。
-            CompilerError: コンパイル中に致命的なエラーが発生した場合。
         """
         self._visited_templates_stack = set()
 
@@ -62,25 +83,98 @@ class XivCompiler:
         except Exception as e:
             raise CompilerError(f"メインのXIVファイルの読み込み中にエラーが発生しました: {e}")
 
-        processed_main_content: str = self._process_content(main_content_raw, templates_dir, "main.xiv")
+        processed_main_content: str = self._process_content(main_content_raw, templates_dir, "main.xiv", {})
 
-        final_html: str = re.sub(r'<xiv type="main">(.*?)</xiv>', r'\1', processed_main_content, flags=re.DOTALL)
+        # Inject the runtime script
+        try:
+            # Get the directory of the current script (src/compiler.py)
+            compiler_dir = os.path.dirname(os.path.abspath(__file__))
+            runtime_path = os.path.join(compiler_dir, 'runtime', 'xiv.js')
+            with open(runtime_path, 'r', encoding='utf-8') as f:
+                runtime_script = f.read()
+        except FileNotFoundError:
+            runtime_script = "// XIV Runtime not found.インタラクティブ機能は動作しません。"
+
+        soup = BeautifulSoup(processed_main_content, 'lxml')
+        
+        # Find the main xiv tag to inject script and content
+        main_tag = soup.find('xiv', {'type': 'main'})
+        if main_tag:
+            script_tag = soup.new_tag("script")
+            script_tag.string = runtime_script
+            main_tag.append(script_tag)
+            main_tag.unwrap()
 
         final_output: str = f"""<!DOCTYPE html>
 <html>
-{final_html}
+{str(soup)}
 </html>"""
 
         return BeautifulSoup(final_output, "lxml").prettify()
 
-    def _process_content(self, current_content: str, templates_dir: str, current_template_context_path: str) -> str:
-        # コメントの削除
+    def _process_content(self, current_content: str, templates_dir: str, current_template_context_path: str, args: Dict[str, Any]) -> str:
         current_content = re.sub(r'<!--xiv-comment-->', '', current_content)
 
         soup: BeautifulSoup = BeautifulSoup(current_content, 'lxml')
 
+        # --- Process directives in the correct order: for -> if -> temp ---
+
+        # 1. Process x-for
+        for element in soup.find_all(attrs={"x-for": True}):
+            loop_expr = element.get('x-for')
+            del element['x-for']
+
+            match_expr = re.match(r'^\s*(\w+)\s+in\s+([\w.]+)\s*$', loop_expr)
+            if not match_expr:
+                raise CompilerError(f"Invalid x-for expression: '{loop_expr}'", current_template_context_path)
+
+            item_var, items_var = match_expr.groups()
+            
+            items_data_source = self._get_value_from_path(items_var, args)
+            
+            items_data: List[Any]
+            if items_data_source is None:
+                items_data = []
+            elif isinstance(items_data_source, str):
+                try:
+                    items_data = json.loads(items_data_source)
+                except json.JSONDecodeError:
+                    raise CompilerError(f"Invalid JSON data for '{items_var}' in x-for: {items_data_source}", current_template_context_path)
+            elif isinstance(items_data_source, list):
+                items_data = items_data_source
+            else:
+                raise CompilerError(f"Data for '{items_var}' in x-for must be a list or a JSON string.", current_template_context_path)
+
+            if not isinstance(items_data, list):
+                raise CompilerError(f"Data for '{items_var}' in x-for must be a list.", current_template_context_path)
+
+            generated_elements = []
+            for item_data in items_data:
+                loop_args = copy.deepcopy(args)
+                loop_args[item_var] = item_data
+                
+                template_element = copy.copy(element)
+                processed_item_html = self._process_content(str(template_element), templates_dir, current_template_context_path, loop_args)
+                processed_soup = BeautifulSoup(processed_item_html, 'lxml')
+                generated_elements.extend(processed_soup.body.contents if processed_soup.body else processed_soup.contents)
+
+            element.replace_with(*generated_elements)
+
+        # 2. Process x-if
+        for element in soup.find_all(attrs={"x-if": True}):
+            condition_str = element.get('x-if')
+            if isinstance(condition_str, str):
+                del element['x-if']
+                if not self._evaluate_condition(condition_str, args):
+                    element.decompose()
+
+        # 3. Process x-temp
         for match in soup.find_all('x-temp'):
             assert isinstance(match, Tag)
+
+            slot_content_html: str = "".join(str(c) for c in match.contents)
+            processed_slot_html: str = self._process_content(slot_content_html, templates_dir, current_template_context_path, args)
+
             template_name: Optional[str] = cast(str, match.get('x-name'))
             
             if not template_name:
@@ -97,13 +191,12 @@ class XivCompiler:
             if not os.path.isfile(referenced_template_full_path):
                 raise FileNotFoundError(f"テンプレートファイルが見つかりません: {referenced_template_full_path}") from None
 
-            template_args: Dict[str, str] = {}
+            new_args: Dict[str, Any] = {}
             for attr, value in match.attrs.items():
                 if attr.startswith('t-'):
                     key: str = attr[2:]
                     value_str: str = str(value)
-                    value_escaped: str = html.escape(value_str, quote=True)
-                    template_args[key] = value_escaped
+                    new_args[key] = value_str
 
             try:
                 with open(referenced_template_full_path, 'r', encoding='utf-8') as f:
@@ -118,32 +211,41 @@ class XivCompiler:
                 template_to_process = template_content_raw
 
             self._visited_templates_stack.add(referenced_template_full_path)
-            processed_nested_template_content: str = self._process_content(template_to_process, templates_dir, referenced_template_full_path)
+            processed_nested_template_content: str = self._process_content(template_to_process, templates_dir, referenced_template_full_path, new_args)
             self._visited_templates_stack.remove(referenced_template_full_path)
 
-            final_template_html: str = processed_nested_template_content
-            for arg_key, arg_value in template_args.items():
-                placeholder: str = f"{{{{{arg_key}}}}}"
-                final_template_html = final_template_html.replace(placeholder, arg_value)
+            template_soup = BeautifulSoup(processed_nested_template_content, 'lxml')
+            slot_tag = template_soup.find('x-slot')
+            if slot_tag:
+                slot_soup = BeautifulSoup(processed_slot_html, 'lxml')
+                slot_contents = slot_soup.body.contents if slot_soup.body else slot_soup.contents
+                slot_tag.replace_with(*slot_contents)
             
-            # デフォルト値の処理
-            def replace_default(match):
-                full_placeholder = match.group(0)
-                placeholder_name = match.group(1)
-                default_value = match.group(2) if match.group(2) else ''
-                
-                # 既に置換された引数は除外
-                if placeholder_name in template_args:
-                    return template_args[placeholder_name]
-                else:
-                    return default_value
-            
-            final_template_html = re.sub(r'{{([^}|]+)(?:\|([^}]*))?}}', replace_default, final_template_html)
+            final_template_html = str(template_soup)
 
             safe_template_name: str = re.sub(r'[^\w-]', '', template_name)
             replacement_div = soup.new_tag('div', attrs={'class': f'x-{safe_template_name}'})
-            replacement_div.append(BeautifulSoup(final_template_html.strip(), 'lxml'))
+            
+            final_soup = BeautifulSoup(final_template_html, 'lxml')
+            contents = final_soup.body.contents if final_soup.body else final_soup.contents
+            replacement_div.extend(contents)
             
             match.replace_with(replacement_div)
 
-        return str(soup)
+        # 4. Final placeholder substitution
+        content_after_directives = str(soup)
+
+        def replacer(m):
+            key = m.group(1).strip()
+            default_value = m.group(2).strip() if m.group(2) is not None else ''
+            
+            value = self._get_value_from_path(key, args)
+
+            if value is not None:
+                return html.escape(str(value), quote=True)
+            else:
+                return html.escape(default_value, quote=True)
+
+        final_content = re.sub(r'{{\s*([^}|]+?)\s*(?:\|([^}]*))?}}', replacer, content_after_directives)
+
+        return final_content

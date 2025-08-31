@@ -9,10 +9,10 @@
   <h1>
    XIV Interactive Demo
   </h1>
+  <h2>
+   Counter Example
+  </h2>
   <div class="demo-box" x-data='{ "count": 0, "message": "Hello XIV!" }'>
-   <h2>
-    Counter
-   </h2>
    <p>
     Current count is:
     <b x-text="count">
@@ -21,21 +21,12 @@
    <button x-on:click="count++">
     Increment
    </button>
-   <hr/>
-   <h2>
-    Two-Way Data Binding (x-model)
-   </h2>
    <p>
-    Type in the box below.
+    Message is:
+    <span x-text="message">
+    </span>
    </p>
-   <input type="text" x-model="message"/>
-   <p>
-    The message is:
-    <b>
-     <span x-text="message">
-     </span>
-    </b>
-   </p>
+   <input type="text" x-on:input="message = event.target.value"/>
   </div>
   <script>
    const XIV = {
@@ -67,36 +58,25 @@
                 return true;
             }
         });
+        // Initial UI update based on initial data
         this.update(el, scope);
         return scope;
     },
 
     update(el, scope) {
-        // Update x-text elements
+        // Update all elements with x-text
         el.querySelectorAll('[x-text]').forEach(textEl => {
             const key = textEl.getAttribute('x-text');
             if (key in scope) {
                 textEl.textContent = scope[key];
             }
         });
-
-        // Update x-model elements
-        el.querySelectorAll('[x-model]').forEach(modelEl => {
-            const key = modelEl.getAttribute('x-model');
-            // Avoid updating the element that is currently being focused by the user
-            // to prevent cursor jumps and IME issues.
-            if (document.activeElement !== modelEl) {
-                if (key in scope) {
-                    modelEl.value = scope[key];
-                }
-            }
-        });
     },
 
     registerEvents(el, scope) {
+        // Find all elements with x-on attributes within the component
         const elementsWithEvents = [el, ...el.querySelectorAll('*')];
         elementsWithEvents.forEach(node => {
-            // Handle x-on directives
             for (const attr of node.attributes) {
                 if (attr.name.startsWith('x-on:')) {
                     const event = attr.name.substring(5);
@@ -104,6 +84,7 @@
                     
                     node.addEventListener(event, () => {
                         try {
+                            // Execute the expression within the scope of the component's data
                             const func = new Function('scope', `with(scope) { ${expression} }`);
                             func(scope);
                         } catch (e) {
@@ -111,20 +92,6 @@
                         }
                     });
                 }
-            }
-
-            // Handle x-model directive
-            if (node.hasAttribute('x-model')) {
-                const key = node.getAttribute('x-model');
-                const eventType = (node.type === 'checkbox' || node.type === 'radio') ? 'change' : 'input';
-
-                node.addEventListener(eventType, () => {
-                    if (node.type === 'checkbox') {
-                        scope[key] = node.checked;
-                    } else {
-                        scope[key] = node.value;
-                    }
-                });
             }
         });
     }

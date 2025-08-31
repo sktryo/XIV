@@ -1,99 +1,121 @@
 # XIV
 
-XIVは、HTMLテンプレートをコンポーネントベースで記述し、単一のHTMLファイルにコンパイルするためのシンプルなテンプレートエンジンです。
+A simple, component-based template engine that evolves into a lightweight JavaScript framework.
 
-## 特徴
+XIV allows you to write clean, reusable HTML components and bring them to life with minimal JavaScript, powered by a Python-based compiler.
 
-- **コンポーネントベース:** `<x-temp>` タグを使って、テンプレートを部品として再利用できます。
-- **引数渡し:** `t-*` 属性を介して、コンポーネントに文字列を渡すことができます。
-- **ネスト:** コンポーネントの中に、さらに別のコンポーネントを配置できます。
-- **循環参照の検出:** テンプレート同士が無限にお互いを呼び出すような状況を検出し、コンパイルを停止します。
-- **安全性:** パストラバーサル攻撃の防止や、属性値のエスケープに関するルールを設けています。
+## Features
 
-## インストール
+- **Component-Based Architecture:** Use `<x-temp>` to build your UI from reusable parts.
+- **Props:** Pass data to components with `t-*` attributes.
+- **Slots:** Inject complex HTML content into your components.
+- **Conditional Rendering:** Use `x-if` and `x-if="not ..."` to show or hide elements.
+- **List Rendering:** Loop over arrays violência `x-for="item in items"`.
+- **Reactive State:** Manage component state with `x-data`.
+- **Event Handling:** Listen to DOM events with `x-on:<event>`.
+- **Reactive Text:** Bind state properties to text content with `x-text`.
 
-まず、リポジトリをクローンし、必要なライブラリをインストールします。
+## Installation
+
+XIV uses a Python-based compiler wrapped in a Node.js CLI. Installation is a two-step process.
+
+### Step 1: Python Environment Setup
+
+First, ensure you have Python 3 and `pip` installed. Then, set up the compiler's dependencies:
 
 ```shell
-# 仮想環境があることを確認してください
-# pip install -r requirements.txt
+# Clone the repository (or download the source)
+# git clone https://your-repo-url/xiv.git
+# cd xiv
+
+# Create a virtual environment (recommended)
+python3 -m venv venv
+
+# Install required Python packages
 venv/bin/pip install -r requirements.txt
 ```
 
-## 使い方
+### Step 2: Install from npm
 
-`main.py` を使って `.xiv` ファイルをコンパイルします。
+Once the Python environment is ready, you can install the `xiv-lang` command-line tool globally from npm:
 
 ```shell
-python3 main.py [入力ファイル] [オプション]
+npm install -g .
+# (In a real scenario, this would be: npm install -g xiv-lang)
 ```
 
-**コマンドラインオプション:**
+## Usage
 
-```
-usage: main.py [-h] [-t TEMPLATES_DIR] [-o OUTPUT_FILE] input_file
+Use the `xiv` command to compile your `.xiv` files into a single HTML file.
 
-XIVテンプレート言語をHTMLにコンパイルします。
-
-positional arguments:
-  input_file            コンパイルするメインのXIVファイルのパス。
-                        例: python main.py main.xiv
-
-options:
-  -h, --help            show this help message and exit
-  -t TEMPLATES_DIR, --templates_dir TEMPLATES_DIR
-                        テンプレートファイルが格納されているディレクトリのパス (デフォルト: ./templates)
-  -o OUTPUT_FILE, --output_file OUTPUT_FILE
-                        コンパイルされたHTMLの出力先ファイルパス (デフォルト: ./index.html)
+```shell
+xiv <input_file> [options]
 ```
 
-## 構文ガイド
+**Example:**
 
-### コンポーネント (`<x-temp>`)
+```shell
+xiv docs/main.xiv -o dist/index.html -t docs/templates
+```
 
-他のテンプレートファイルを読み込むには、`<x-temp>` タグを使用します。
-`x-name` 属性で、`templates` ディレクトリにあるテンプレートファイル（`.xiv`拡張子を除く）の名前を指定します。
+**Options:**
+
+- `-t, --templates_dir <path>`: Directory for template files (default: `./templates`)
+- `-o, --output_file <path>`: Path for the output HTML file (default: `./index.html`)
+
+## Syntax Guide
+
+### Components & Props
 
 ```html
 <!-- main.xiv -->
-<x-temp x-name="panel" />
-```
+<x-temp x-name="greeting" t-message="Hello World" />
 
-### 引数 (`t-*` 属性)
-
-`t-` から始まる属性を使うことで、コンポーネントにデータを渡すことができます。
-
-```html
-<!-- main.xiv -->
-<x-temp x-name="panel" t-title="ようこそ" t-message="こんにちは、世界！" />
-```
-
-テンプレートファイル側では、`{{}}` で囲むことで、渡された値を受け取ります。
-
-```html
-<!-- templates/panel.xiv -->
+<!-- templates/greeting.xiv -->
 <xiv type="template">
-    <h2>{{title}}</h2>
-    <p>{{message}}</p>
+    <p>{{ message }}</p>
 </xiv>
 ```
 
-### 【重要】属性値のエスケープ
+### Slots
 
-`t-*` 属性の値に `"` や `<` などの特殊文字を含める場合は、**必ずHTMLエスケープを行う必要があります**。これはXSS（クロスサイトスクリプティング）脆弱性を防ぐために重要です。
-
-**悪い例 (不正な形式):**
 ```html
-<x-temp x-name="comment" t-text="<script>alert("XSS")</script>" />
+<!-- main.xiv -->
+<x-temp x-name="card">
+    <h4>Card Title</h4>
+</x-temp>
+
+<!-- templates/card.xiv -->
+<xiv type="template">
+    <div class="card">
+        <slot />
+    </div>
+</xiv>
 ```
 
-**良い例 (正しい形式):**
+### Conditional & List Rendering
+
 ```html
-<x-temp x-name="comment" t-text="&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;" />
+<div t-users='[{"name": "Alice", "active": true}, {"name": "Bob", "active": false}]'>
+    <template x-for="user in users">
+        <div x-if="user.active">
+            <p>{{ user.name }} is active.</p>
+        </div>
+    </template>
+</div>
 ```
 
-コンパイラは、ユーザーが提供したエスケープ済みの文字列をそのままHTMLに出力します。
+### Interactive Components
 
-## ライセンス
+XIV injects a lightweight JavaScript runtime to handle client-side interactivity.
 
-このプロジェクトは [LICENSE](./LICENSE) の下で公開されています。
+```html
+<div x-data='{ "count": 0 }'>
+    <p>Count: <span x-text="count"></span></p>
+    <button x-on:click="count++">Increment</button>
+</div>
+```
+
+## License
+
+This project is licensed under the ISC License. See the [LICENSE](./LICENSE) file for details.

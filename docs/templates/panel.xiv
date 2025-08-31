@@ -1,4 +1,0 @@
-<xiv type="template">
-    <b>{{header}}</b>
-    <p>{{string}}</p>
-</xiv>
