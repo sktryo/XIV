@@ -1,3 +1,4 @@
+[![test](https://github.com/sktryo/XIV/actions/workflows/test.yml/badge.svg)](https://github.com/sktryo/XIV/actions/workflows/test.yml)
 # XIV
 
 A simple, component-based template engine that evolves into a lightweight JavaScript framework.
