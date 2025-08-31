@@ -4,7 +4,7 @@
   "description": "XIV is a simple template engine for creating component-based HTML.",
   "main": "cli.js",
   "bin": {
-    "xiv": "./cli.js"
+    "xiv": "cli.js"
   },
   "scripts": {
     "test": "python3 -m pytest"
