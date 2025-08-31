@@ -25,8 +25,8 @@ First, ensure you have Python 3 and `pip` installed. Then, set up the compiler's
 
 ```shell
 # Clone the repository (or download the source)
-# git clone https://your-repo-url/xiv.git
-# cd xiv
+git clone https://github.com/sktryo/XIV.git
+cd XIV
 
 # Create a virtual environment (recommended)
 python3 -m venv venv
