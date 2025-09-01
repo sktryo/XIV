@@ -1,4 +1,5 @@
 [![test](https://github.com/sktryo/XIV/actions/workflows/test.yml/badge.svg)](https://github.com/sktryo/XIV/actions/workflows/test.yml)
+[![Publish to NPM](https://github.com/sktryo/XIV/actions/workflows/publish_npm.yaml/badge.svg)](https://github.com/sktryo/XIV/actions/workflows/publish_npm.yaml)
 # XIV
 
 A simple, component-based template engine that evolves into a lightweight JavaScript framework.
