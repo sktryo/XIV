@@ -3,7 +3,7 @@ name: Publish to NPM
 on:
   push:
     branches:
-      - main  # またはmasterなど、公開用のブランチ
+      - main
 
 jobs:
   build_and_publish:
@@ -16,12 +16,13 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20' # またはプロジェクトに適したバージョン
+        node-version: '20'
+        registry-url: 'https://registry.npmjs.org/' # NPMレジストリを指定
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11' # またはプロジェクトに適したバージョン
+        python-version: '3.11'
         cache: 'pip'
 
     - name: Install Python dependencies
@@ -36,7 +37,6 @@ jobs:
       run: npm test
 
     - name: Publish to NPM
-      if: success()
       run: npm publish --access public
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
