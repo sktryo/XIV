@@ -15,13 +15,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           registry-url: 'https://registry.npmjs.org/'
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
           cache: 'pip'
 
       - name: Install Python dependencies
@@ -38,7 +38,7 @@ jobs:
       - name: Get release version from title
         id: get_version
         run: |
-          VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v//')
+          VERSION=$(echo "${{ github.event.release.tag_name }}" | sed 's/^v\.//')
           echo "PACKAGE_VERSION=$VERSION" >> $GITHUB_ENV
       
       - name: Update package.json version
