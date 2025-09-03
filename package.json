@@ -1,6 +1,6 @@
 {
   "name": "xiv-lang",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "XIV is a simple template engine for creating component-based HTML.",
   "main": "cli.ts",
   "bin": {
@@ -28,13 +28,62 @@
     "commander": "^14.0.0",
     "js-beautify": "^1.15.4"
   },
-  "private": true,
   "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^7.1.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.5",
     "@types/bun": "latest",
     "@types/cheerio": "^1.0.0",
-    "@types/js-beautify": "^1.14.3"
+    "@types/js-beautify": "^1.14.3",
+    "conventional-changelog-conventionalcommits": "^9.1.0",
+    "semantic-release": "^24.2.7"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      [
+        "@semantic-release/commit-analyzer",
+        {
+          "preset": "conventionalcommits",
+          "releaseRules": [
+            {
+              "type": "build",
+              "scope": "deps",
+              "release": "patch"
+            }
+          ]
+        }
+      ],
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/changelog",
+        {
+          "changelogFile": "CHANGELOG.md"
+        }
+      ],
+      "@semantic-release/github",
+      [
+        "@semantic-release/exec",
+        {
+          "publishCmd": "bun publish"
+        }
+      ],
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "package.json",
+            "CHANGELOG.md"
+          ],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        }
+      ]
+    ]
   }
 }
