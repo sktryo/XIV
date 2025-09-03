@@ -32,4 +32,4 @@ jobs:
         run: ~/.bun/bin/bunx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BUN_API_TOKEN: ${{ secrets.BUN_API_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
