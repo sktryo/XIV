@@ -1,31 +1,64 @@
 <xiv type="main">
     <head>
-        <title>XIV Interactive Demo!</title>
+        <title>XIV User Directory Demo</title>
         <link rel="stylesheet" href="style.css" />
         <meta charset="UTF-8" />
     </head>
     <body>
-        <h1>XIV Interactive Demo</h1>
+        <div class="container">
+            <h1>XIV User Directory</h1>
 
-        <div class="demo-box" x-data='{ "count": 0, "message": "Hello XIV!" }'>
-            <h2>Counter</h2>
-            <p>Current count is: <b x-text="count"></b></p>
-            <button x-on:click="count++">Increment</button>
-            
-            <hr>
+            <div x-data="{
+                users: [],
+                isLoading: true,
+                searchQuery: '',
+                init() {
+                    this.$fetch('https://jsonplaceholder.typicode.com/users')
+                        .then(data => {
+                            this.users = data;
+                        })
+                        .finally(() => {
+                            this.isLoading = false;
+                        });
+                },
+                get filteredUsers() {
+                    if (this.searchQuery === '') {
+                        return this.users;
+                    }
+                    return this.users.filter(user =>
+                        user.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                        user.email.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    );
+                }
+            }" x-init="init()">
 
-            <h2>Two-Way Data Binding (x-model)</h2>
-            <p>Type in the box below.</p>
-            <input type="text" x-model="message">
-            <p>The message is: <b><span x-text="message"></span></b></p>
+                <input type="text" x-model="searchQuery" class="search-box" placeholder="Search by name or email...">
+
+                <template x-if="isLoading">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                    </div>
+                </template>
+
+                <template x-if="!isLoading && filteredUsers.length === 0">
+                    <div class="empty-state">
+                        <p>No users found.</p>
+                    </div>
+                </template>
+
+                <template x-if="!isLoading">
+                    <div class="grid">
+                        <template x-for="user in filteredUsers">
+                            <div class="card">
+                                <h2 x-text="user.name"></h2>
+                                <p><a x-bind:href="`mailto:${user.email}`" x-text="user.email"></a></p>
+                                <p><strong>Website:</strong> <a x-bind:href="`http://${user.website}`" target="_blank" x-text="user.website"></a></p>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+            </div>
         </div>
-
-        <hr>
-
-        <h2>Custom Element Test (x-temp)</h2>
-        <x-temp src="./templates/my-card.xiv" t-title="My Custom Card">
-            This is the <b>slot content</b> passed to the card.
-        </x-temp>
-
     </body>
 </xiv>

@@ -1,4 +1,5 @@
-<div>
-    <h2>{{title}}</h2>
-    <p><x-slot /></p>
+<div class="card">
+    <h2 x-text="user.name"></h2>
+    <p x-text="user.email"></p>
+    <a x-bind:href="`http://${user.website}`" target="_blank" x-text="user.website"></a>
 </div>
