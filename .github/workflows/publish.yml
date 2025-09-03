@@ -1,0 +1,22 @@
+name: Publish to Bun
+
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on tags like v1.0.0, v1.2.3, etc.
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Publish to Bun Registry
+        run: bun publish
+        env:
+          BUN_API_TOKEN: ${{ secrets.BUN_API_TOKEN }}

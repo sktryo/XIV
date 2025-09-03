@@ -1,0 +1,10 @@
+
+<xiv type="main">
+    <head>
+        <title>My Custom Title</title>
+        <meta name="description" content="Test description">
+    </head>
+    <body>
+        <p>Some content</p>
+    </body>
+</xiv>
