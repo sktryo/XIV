@@ -9,13 +9,16 @@ on:
       - 'src/**'
       - 'cli.ts'
 
+permissions:
+  contents: write
+
 jobs:
   compile:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -27,11 +30,11 @@ jobs:
         run: ~/.bun/bin/bun run cli.ts docs/main.xiv -o docs/index.html
 
       - name: Commit and push if changed
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add docs/index.html
-          # The following command exits with 0 if there are no changes, and 1 if there are changes.
-          # We use || true to prevent the workflow from failing if there are no changes.
           git diff --staged --quiet || git commit -m "docs: auto-compile demo page [skip ci]"
-          git push
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/sktryo/XIV.git HEAD:main
