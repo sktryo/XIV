@@ -20,5 +20,12 @@
             <p>The message is: <b><span x-text="message"></span></b></p>
         </div>
 
+        <hr>
+
+        <h2>Custom Element Test (x-temp)</h2>
+        <x-temp src="./templates/my-card.xiv" t-title="My Custom Card">
+            This is the <b>slot content</b> passed to the card.
+        </x-temp>
+
     </body>
 </xiv>

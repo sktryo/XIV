@@ -2,12 +2,12 @@
   "name": "xiv-lang",
   "version": "1.0.0",
   "description": "XIV is a simple template engine for creating component-based HTML.",
-  "main": "cli.js",
+  "main": "cli.ts",
   "bin": {
-    "xiv": "cli.js"
+    "xiv": "cli.ts"
   },
   "scripts": {
-    "test": "python3 -m pytest"
+    "test": "bun test"
   },
   "keywords": [
     "template-engine",
@@ -19,11 +19,22 @@
   "files": [
     "src/",
     "runtime/",
-    "cli.js",
+    "cli.ts",
     "README.md",
     "LICENSE"
   ],
   "dependencies": {
-    "commander": "^14.0.0"
+    "cheerio": "^1.1.2",
+    "commander": "^14.0.0",
+    "js-beautify": "^1.15.4"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/cheerio": "^1.0.0",
+    "@types/js-beautify": "^1.14.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
   }
 }
