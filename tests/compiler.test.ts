@@ -43,16 +43,18 @@ describe('XivCompiler', () => {
     const mainXivFile = path.join(import.meta.dir, TEST_DIR, 'main1.xiv');
     await write(mainXivFile, mainXivContent);
 
-    const result = await compiler.compile(mainXivFile);
+    const result = await compiler.compile(mainXivFile, './test-output.html');
     const $ = cheerio.load(result);
 
     expect($('body').length).toBe(1);
     expect($('body h1').text().trim()).toBe('Hello XIV');
     expect($('body p').text().trim()).toBe('This is the new era.');
 
-    const scriptTag = $('body script').html();
-    expect(scriptTag).not.toBeNull();
-    expect(scriptTag).toInclude('const XIV = {'); // A known string from the runtime
+    const scriptTag = $('body script');
+    expect(scriptTag.length).toBe(1);
+    const src = scriptTag.attr('src');
+    expect(src).not.toBeNull();
+    expect(src).toBe('dist/runtime.js');
   });
 
   test('head content injection', async () => {
@@ -69,7 +71,7 @@ describe('XivCompiler', () => {
     const mainXivFile = path.join(import.meta.dir, TEST_DIR, 'main2.xiv');
     await write(mainXivFile, mainXivContent);
 
-    const result = await compiler.compile(mainXivFile);
+    const result = await compiler.compile(mainXivFile, './test-output.html');
     const $ = cheerio.load(result);
 
     expect($('head').length).toBe(1);
@@ -81,7 +83,7 @@ describe('XivCompiler', () => {
   test('file not found error', async () => {
     const nonExistentFile = path.join(import.meta.dir, TEST_DIR, 'nonexistent.xiv');
     // Using expect().toThrow() for async functions requires a slightly different syntax
-    await expect(compiler.compile(nonExistentFile)).rejects.toThrow(CompilerError);
-    await expect(compiler.compile(nonExistentFile)).rejects.toThrow('Error: Main XIV file not found');
+    await expect(compiler.compile(nonExistentFile, './test-output.html')).rejects.toThrow(CompilerError);
+    await expect(compiler.compile(nonExistentFile, './test-output.html')).rejects.toThrow('Error: Main XIV file not found');
   });
 });
