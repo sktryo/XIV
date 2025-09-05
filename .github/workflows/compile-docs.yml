@@ -23,15 +23,16 @@ jobs:
       - name: Install dependencies
         run: bun install
 
+      - name: Build Runtime
+        run: bun run build:runtime
+
       - name: Compile docs/main.xiv
-        run: ~/.bun/bin/bun run cli.ts docs/main.xiv -o docs/index.html
+        run: bun run cli.ts docs/main.xiv -o docs/index.html
 
       - name: Commit and push if changed
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add docs/index.html
-          # The following command exits with 0 if there are no changes, and 1 if there are changes.
-          # We use || true to prevent the workflow from failing if there are no changes.
           git diff --staged --quiet || git commit -m "docs: auto-compile demo page [skip ci]"
           git push

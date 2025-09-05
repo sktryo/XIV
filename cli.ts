@@ -21,7 +21,7 @@ program
     const compiler = new XivCompiler();
 
     try {
-      const compiledHtml = await compiler.compile(inputFile);
+      const compiledHtml = await compiler.compile(inputFile, options.output_file);
       
       const outputPath = path.resolve(options.output_file);
       await write(outputPath, compiledHtml);

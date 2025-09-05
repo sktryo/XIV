@@ -10,7 +10,7 @@ export class CompilerError extends Error {
 }
 
 export class XivCompiler {
-  public async compile(mainFilePath: string): Promise<string> {
+  public async compile(mainFilePath: string, outputFilePath: string): Promise<string> {
     const normalizedMainFilePath = path.normalize(mainFilePath);
 
     const mainFile = file(normalizedMainFilePath);
@@ -25,13 +25,7 @@ export class XivCompiler {
       throw new CompilerError(`Error reading main XIV file: ${e}`);
     }
 
-    let runtimeScript: string;
-    try {
-      const runtimePath = path.join(import.meta.dir, 'runtime', 'xiv.js');
-      runtimeScript = await file(runtimePath).text();
-    } catch (e) {
-      runtimeScript = '// XIV Runtime not found. Interactive features will not work.';
-    }
+    const runtimeScriptPath = path.relative(path.dirname(path.resolve(outputFilePath)), path.resolve('dist/runtime.js')).replace(/\\/g, '/');
 
     let headContent = '';
     let bodyContent = '';
@@ -71,9 +65,7 @@ export class XivCompiler {
 ${finalHead}
 <body>
 ${bodyContent}
-    <script>
-${runtimeScript}
-    </script>
+    <script src="${runtimeScriptPath}"></script>
 </body>
 </html>`;
 
